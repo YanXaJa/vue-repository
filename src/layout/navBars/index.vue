@@ -5,24 +5,23 @@
 	</div>
 </template>
 
-<script setup lang="ts" name="layoutNavBars">
-import { defineAsyncComponent, computed } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useThemeConfig } from '/@/stores/themeConfig';
-
-// 引入组件
-const BreadcrumbIndex = defineAsyncComponent(() => import('/@/layout/navBars/topBar/index.vue'));
-const TagsView = defineAsyncComponent(() => import('/@/layout/navBars/tagsView/tagsView.vue'));
-
-// 定义变量内容
-const storesThemeConfig = useThemeConfig();
-const { themeConfig } = storeToRefs(storesThemeConfig);
-
-// 是否显示 tagsView
-const setShowTagsView = computed(() => {
-	let { layout, isTagsview } = themeConfig.value;
-	return layout !== 'classic' && isTagsview;
-});
+<script>
+import BreadcrumbIndex from '@/layout/navBars/topBar/index.vue';
+import TagsView from '@/layout/navBars/tagsView/tagsView.vue';
+export default {
+	name: 'layoutNavBars',
+	components: { BreadcrumbIndex, TagsView },
+	data() {
+		return {};
+	},
+	computed: {
+		// 设置是否显示 tagsView
+		setShowTagsView() {
+			let { layout, isTagsview } = this.$store.state.themeConfig.themeConfig;
+			return layout !== 'classic' && isTagsview;
+		},
+	},
+};
 </script>
 
 <style scoped lang="scss">

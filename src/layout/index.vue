@@ -1,50 +1,51 @@
 <template>
-	<component :is="layouts[themeConfig.layout]" />
+	<Defaults v-if="getThemeConfig.layout === 'defaults'" />
+	<Classic v-else-if="getThemeConfig.layout === 'classic'" />
+	<Transverse v-else-if="getThemeConfig.layout === 'transverse'" />
+	<Columns v-else-if="getThemeConfig.layout === 'columns'" />
 </template>
 
-<script setup lang="ts" name="layout">
-import { onBeforeMount, onUnmounted, defineAsyncComponent } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useThemeConfig } from '/@/stores/themeConfig';
-import { Local } from '/@/utils/storage';
-import mittBus from '/@/utils/mitt';
-
-// 引入组件
-const layouts: any = {
-	defaults: defineAsyncComponent(() => import('/@/layout/main/defaults.vue')),
-	classic: defineAsyncComponent(() => import('/@/layout/main/classic.vue')),
-	transverse: defineAsyncComponent(() => import('/@/layout/main/transverse.vue')),
-	columns: defineAsyncComponent(() => import('/@/layout/main/columns.vue')),
+<script>
+import { Local } from '@/utils/storage.js';
+export default {
+	name: 'layout',
+	components: {
+		Defaults: () => import('@/layout/main/defaults.vue'),
+		Classic: () => import('@/layout/main/classic.vue'),
+		Transverse: () => import('@/layout/main/transverse.vue'),
+		Columns: () => import('@/layout/main/columns.vue'),
+	},
+	computed: {
+		// 获取布局配置信息
+		getThemeConfig() {
+			return this.$store.state.themeConfig.themeConfig;
+		},
+	},
+	created() {
+		this.onLayoutResize();
+		window.addEventListener('resize', this.onLayoutResize);
+	},
+	methods: {
+		// 窗口大小改变时(适配移动端)
+		onLayoutResize() {
+			if (!Local.get('oldLayout')) Local.set('oldLayout', this.$store.state.themeConfig.themeConfig.layout);
+			const clientWidth = document.body.clientWidth;
+			if (clientWidth < 1000) {
+				this.$store.state.themeConfig.themeConfig.isCollapse = false;
+				this.bus.$emit('layoutMobileResize', {
+					layout: 'defaults',
+					clientWidth,
+				});
+			} else {
+				this.bus.$emit('layoutMobileResize', {
+					layout: Local.get('oldLayout') ? Local.get('oldLayout') : this.$store.state.themeConfig.themeConfig.layout,
+					clientWidth,
+				});
+			}
+		},
+	},
+	distroyed() {
+		window.removeEventListener('resize', this.onLayoutResize);
+	},
 };
-
-// 定义变量内容
-const storesThemeConfig = useThemeConfig();
-const { themeConfig } = storeToRefs(storesThemeConfig);
-
-// 窗口大小改变时(适配移动端)
-const onLayoutResize = () => {
-	if (!Local.get('oldLayout')) Local.set('oldLayout', themeConfig.value.layout);
-	const clientWidth = document.body.clientWidth;
-	if (clientWidth < 1000) {
-		themeConfig.value.isCollapse = false;
-		mittBus.emit('layoutMobileResize', {
-			layout: 'defaults',
-			clientWidth,
-		});
-	} else {
-		mittBus.emit('layoutMobileResize', {
-			layout: Local.get('oldLayout') ? Local.get('oldLayout') : themeConfig.value.layout,
-			clientWidth,
-		});
-	}
-};
-// 页面加载前
-onBeforeMount(() => {
-	onLayoutResize();
-	window.addEventListener('resize', onLayoutResize);
-});
-// 页面卸载时
-onUnmounted(() => {
-	window.removeEventListener('resize', onLayoutResize);
-});
 </script>

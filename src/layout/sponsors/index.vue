@@ -1,62 +1,66 @@
 <template>
-	<div class="sponsors-container" title="点击前往体验" v-show="state.sponsors.isShow" @click="onSponsorsClick">
+	<div class="sponsors-container" title="点击前往体验" v-show="sponsors.isShow" @click="onSponsorsClick">
 		<el-carousel height="240px" indicator-position="none" :arrow="setCarouselShow" @change="onCarouselChange">
-			<el-carousel-item v-for="(v, k) in state.sponsors.list" :key="k">
+			<el-carousel-item v-for="(v, k) in sponsors.list" :key="k">
 				<img :src="v.url" class="sponsors-img" />
 				<div class="sponsors-text" v-html="v.text"></div>
 			</el-carousel-item>
 		</el-carousel>
-		<div class="sponsors-close">
-			<SvgIcon name="ele-Close" :size="12" title="关闭赞助商" @click.stop="onCloseSponsors" />
+		<div class="sponsors-close" title="关闭赞助商" @click.stop="onCloseSponsors">
+			<i class="el-icon-close"></i>
 		</div>
 	</div>
 </template>
 
-<script setup lang="ts" name="layoutSponsors">
-import { reactive, computed, onMounted } from 'vue';
-import sponsorsOne from '/@/assets/ccflowRightNextAdmin.png';
-
-// 定义变量内容
-const state = reactive({
-	sponsors: {
-		list: [
-			{
-				url: sponsorsOne,
-				text: `消息`,
-				link: 'http://www.ccflow.org/',
+<script>
+import sponsorsOne from '@/assets/ccflowRightNextAdmin.png';
+export default {
+	name: 'layoutSponsors',
+	data() {
+		return {
+			sponsors: {
+				list: [
+					{
+						url: sponsorsOne,
+						text: `消息`,
+						link: 'http://www.ccflow.org/',
+					},
+				],
+				isShow: false,
+				index: 0,
 			},
-		],
-		isShow: false,
-		index: 0,
+		};
 	},
-});
-
-// 设置轮播图箭头显示
-const setCarouselShow = computed(() => {
-	return state.sponsors.list.length <= 1 ? 'never' : 'hover';
-});
-// 关闭赞助商
-const onCloseSponsors = () => {
-	state.sponsors.isShow = false;
+	computed: {
+		// 设置轮播图箭头显示
+		setCarouselShow() {
+			return this.sponsors.list.length <= 1 ? 'never' : 'hover';
+		},
+	},
+	methods: {
+		// 关闭赞助商
+		onCloseSponsors() {
+			this.sponsors.isShow = false;
+		},
+		// 轮播图改变时
+		onCarouselChange(e) {
+			this.sponsors.index = e;
+		},
+		// 当前项内容点击
+		onSponsorsClick() {
+			window.open(this.sponsors.list[this.sponsors.index].link);
+		},
+		// 延迟显示，防止影响其它界面加载
+		delayShow() {
+			setTimeout(() => {
+				this.sponsors.isShow = true;
+			}, 3000);
+		},
+	},
+	mounted() {
+		this.delayShow();
+	},
 };
-// 轮播图改变时
-const onCarouselChange = (e: number) => {
-	state.sponsors.index = e;
-};
-// 当前项内容点击
-const onSponsorsClick = () => {
-	window.open(state.sponsors.list[state.sponsors.index].link);
-};
-// 延迟显示，防止影响其它界面加载
-const delayShow = () => {
-	setTimeout(() => {
-		state.sponsors.isShow = true;
-	}, 3000);
-};
-// 页面加载时
-onMounted(() => {
-	delayShow();
-});
 </script>
 
 <style scoped lang="scss">
@@ -66,8 +70,8 @@ onMounted(() => {
 	bottom: 15px;
 	z-index: 3;
 	width: 200px;
-	background-color: var(--next-bg-main-color);
-	box-shadow: var(--el-box-shadow-lighter);
+	background-color: var(--prev-bg-main-color);
+	box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.12);
 	border-radius: 5px;
 	overflow: hidden;
 	cursor: pointer;
@@ -77,8 +81,8 @@ onMounted(() => {
 	}
 	.sponsors-text {
 		padding: 10px;
-		color: var(--el-text-color-regular);
-		font-size: var(--el-dialog-content-font-size);
+		color: var(--prev-color-text-regular);
+		font-size: 14px;
 	}
 	.sponsors-close {
 		width: 60px;
@@ -89,7 +93,8 @@ onMounted(() => {
 		position: absolute;
 		right: -35px;
 		bottom: -35px;
-		:deep(i) {
+		z-index: 5;
+		i {
 			position: absolute;
 			left: 9px;
 			top: 9px;
@@ -98,8 +103,8 @@ onMounted(() => {
 		}
 		&:hover {
 			transition: all 0.3s ease;
-			:deep(i) {
-				color: var(--el-color-primary);
+			i {
+				color: var(--prev-color-primary);
 				transition: all 0.3s ease;
 			}
 		}

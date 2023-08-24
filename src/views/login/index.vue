@@ -1,249 +1,341 @@
 <template>
-	<div class="login-container flex">
-		<div class="login-left">
-			<div class="login-left-logo">
-				<img :src="logoMini" />
-				<div class="login-left-logo-text">
-					<span>{{ getThemeConfig.globalViceTitle }}</span>
-					<span class="login-left-logo-text-msg">{{ getThemeConfig.globalViceTitleMsg }}</span>
-				</div>
-			</div>
-			<div class="login-left-img">
-				<img :src="loginMain" />
-			</div>
-			<img :src="loginBg" class="login-left-waves" />
-		</div>
-		<div class="login-right flex">
-			<div class="login-right-warp flex-margin">
-				<span class="login-right-warp-one"></span>
-				<span class="login-right-warp-two"></span>
-				<div class="login-right-warp-mian">
-					<div class="login-right-warp-main-title">{{ getThemeConfig.globalTitle }} 欢迎您！</div>
-					<div class="login-right-warp-main-form">
-						<div v-if="!state.isScan">
-							<el-tabs v-model="state.tabsActiveName">
-								<el-tab-pane :label="$t('message.label.one1')" name="account">
-									<Account />
-								</el-tab-pane>
-								<el-tab-pane :label="$t('message.label.two2')" name="mobile">
-									<Mobile />
-								</el-tab-pane>
-							</el-tabs>
-						</div>
-						<Scan v-if="state.isScan" />
-						<div class="login-content-main-sacn" @click="state.isScan = !state.isScan">
-							<i class="iconfont" :class="state.isScan ? 'icon-diannao1' : 'icon-barcode-qr'"></i>
-							<div class="login-content-main-sacn-delta"></div>
+	<div class="login">
+		<div class="login-weaper">
+			<div class="login-left">
+				<div class="login-time">{{ time.txt }}</div>
+				<div class="login-left-box">
+					<div>
+						<div class="logo">{{ getThemeConfig.globalViceTitle }}</div>
+						<h2 class="title">{{ getThemeConfig.globalViceDes }}</h2>
+						<div class="msg">
+							<div class="msg-author">
+								<span>{{ quotations.name }}</span>
+								<span>{{ quotations.comeFrom }}</span>
+							</div>
+							<div class="msg-txt">{{ quotations.content }}</div>
 						</div>
 					</div>
 				</div>
 			</div>
+			<div class="login-right">
+				<div class="login-main">
+					<h4 class="login-title">{{ getThemeConfig.globalTitle }}</h4>
+					<el-form class="el-form login-form">
+						<el-form-item style="margin-left: 0px" prop="userName">
+							<el-input
+								type="text"
+								:placeholder="$t('message.login.placeholder1')"
+								prefix-icon="el-icon-user"
+								v-model="ruleForm.userName"
+								clearable
+								autocomplete="off"
+							>
+							</el-input>
+						</el-form-item>
+						<el-form-item style="margin-left: 0px" prop="password">
+							<el-input
+								type="password"
+								:placeholder="$t('message.login.placeholder2')"
+								prefix-icon="el-icon-lock"
+								v-model="ruleForm.password"
+								autocomplete="off"
+								:show-password="true"
+							>
+							</el-input>
+						</el-form-item>
+						<el-form-item style="margin-left: 0px" prop="code">
+							<div class="el-row" span="24">
+								<div class="el-col el-col-16">
+									<el-input
+										type="text"
+										maxlength="4"
+										:placeholder="$t('message.login.placeholder3')"
+										prefix-icon="el-icon-position"
+										v-model="ruleForm.code"
+										clearable
+										autocomplete="off"
+									></el-input>
+								</div>
+								<div class="el-col el-col-8">
+									<div class="login-code">
+										<span class="login-code-img">1234</span>
+									</div>
+								</div>
+							</div>
+						</el-form-item>
+						<el-form-item style="margin: 40px 0px 0">
+							<el-button type="primary" class="login-submit" @click="submitForm" :loading="submit.loading">
+								<span>{{ $t('message.login.btnText') }}</span>
+							</el-button>
+						</el-form-item>
+					</el-form>
+					<div class="login-menu">
+						<a href="javascript:;">{{ $t('message.login.link.one1') }}</a>
+						<a href="javascript:;">{{ $t('message.login.link.one2') }}</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="vue-particles">
+			<vue-particles color="#dedede" shapeType="star" linesColor="#dedede" hoverMode="grab" clickMode="push" style="height: 100%"></vue-particles>
 		</div>
 	</div>
 </template>
 
-<script setup lang="ts" name="loginIndex">
-import { defineAsyncComponent, onMounted, reactive, computed } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useThemeConfig } from '/@/stores/themeConfig';
-import { NextLoading } from '/@/utils/loading';
-import logoMini from '/@/assets/logo-mini.svg';
-import loginMain from '/@/assets/login-main.svg';
-import loginBg from '/@/assets/login-bg.svg';
-
-// 引入组件
-const Account = defineAsyncComponent(() => import('/@/views/login/component/account.vue'));
-const Mobile = defineAsyncComponent(() => import('/@/views/login/component/mobile.vue'));
-const Scan = defineAsyncComponent(() => import('/@/views/login/component/scan.vue'));
-
-// 定义变量内容
-const storesThemeConfig = useThemeConfig();
-const { themeConfig } = storeToRefs(storesThemeConfig);
-const state = reactive({
-	tabsActiveName: 'account',
-	isScan: false,
-});
-
-// 获取布局配置信息
-const getThemeConfig = computed(() => {
-	return themeConfig.value;
-});
-// 页面加载时
-onMounted(() => {
-	NextLoading.done();
-});
+<script>
+import { Session } from '@/utils/storage';
+import { formatDate, formatAxis } from '@/utils/formatTime';
+import { PrevLoading } from '@/utils/loading.js';
+import { quotationsList } from './mock';
+export default {
+	name: 'login',
+	data() {
+		return {
+			quotationsList,
+			quotations: {},
+			isView: false,
+			submit: {
+				loading: false,
+			},
+			ruleForm: {
+				userName: 'admin',
+				password: '123456',
+				code: '1234',
+			},
+			time: {
+				txt: '',
+				fun: null,
+			},
+		};
+	},
+	computed: {
+		// 获取当前时间
+		currentTime() {
+			return formatAxis(new Date());
+		},
+		// 获取布局配置信息
+		getThemeConfig() {
+			return this.$store.state.themeConfig.themeConfig;
+		},
+	},
+	created() {
+		this.initTime();
+	},
+	mounted() {
+		this.initRandomQuotations();
+	},
+	methods: {
+		// 随机语录
+		initRandomQuotations() {
+			this.quotations = this.quotationsList[Math.floor(Math.random() * this.quotationsList.length)];
+		},
+		// 初始化左上角时间显示
+		initTime() {
+			this.time.txt = formatDate(new Date(), 'YYYY-mm-dd HH:MM:SS WWW QQQQ');
+			this.time.fun = setInterval(() => {
+				this.time.txt = formatDate(new Date(), 'YYYY-mm-dd HH:MM:SS WWW QQQQ');
+			}, 1000);
+		},
+		// 登录按钮点击
+		submitForm() {
+			this.submit.loading = true;
+			setTimeout(() => {
+				let defaultRoles = [];
+				let defaultAuthBtnList = [];
+				// admin 页面权限标识，对应路由 meta.roles
+				let adminRoles = ['admin'];
+				// admin 按钮权限标识
+				let adminAuthBtnList = ['btn.add', 'btn.del', 'btn.edit', 'btn.link'];
+				// common 页面权限标识，对应路由 meta.roles
+				let testAuthPageList = ['common'];
+				// test 按钮权限标识
+				let testAuthBtnList = ['btn.add', 'btn.link'];
+				if (this.ruleForm.userName === 'admin') {
+					defaultRoles = adminRoles;
+					defaultAuthBtnList = adminAuthBtnList;
+				} else {
+					defaultRoles = testAuthPageList;
+					defaultAuthBtnList = testAuthBtnList;
+				}
+				const userInfos = {
+					userName: this.ruleForm.userName === 'admin' ? 'admin' : 'test',
+					photo:
+						this.ruleForm.userName === 'admin'
+							? 'https://img0.baidu.com/it/u=1833472230,3849481738&fm=253&fmt=auto?w=200&h=200'
+							: 'https://img2.baidu.com/it/u=2187913762,2708298335&fm=253&fmt=auto&app=138&f=JPEG?w=200&h=200',
+					time: new Date().getTime(),
+					roles: defaultRoles,
+					authBtnList: defaultAuthBtnList,
+				};
+				// 存储 token 到浏览器缓存
+				Session.set('token', Math.random().toString(36).substr(0));
+				// 存储用户信息到浏览器缓存
+				Session.set('userInfo', userInfos);
+				// 存储用户信息到vuex
+				this.$store.dispatch('userInfos/setUserInfos', userInfos);
+				PrevLoading.start();
+				this.$router.push('/');
+				setTimeout(() => {
+					this.$message.success(`${this.currentTime}，${this.$t('message.login.signInText')}`);
+				}, 300);
+			}, 300);
+		},
+	},
+	destroyed() {
+		clearInterval(this.time.fun);
+	},
+};
 </script>
 
 <style scoped lang="scss">
-.login-container {
+.login {
 	height: 100%;
-	background: var(--el-color-white);
-	.login-left {
-		flex: 1;
-		position: relative;
-		background-color: rgba(211, 239, 255, 1);
-		margin-right: 100px;
-		.login-left-logo {
-			display: flex;
-			align-items: center;
-			position: absolute;
-			top: 50px;
-			left: 80px;
-			z-index: 1;
-			animation: logoAnimation 0.3s ease;
-			img {
-				width: 52px;
-				height: 52px;
-			}
-			.login-left-logo-text {
-				display: flex;
-				flex-direction: column;
-				span {
-					margin-left: 10px;
-					font-size: 28px;
-					color: #26a59a;
-				}
-				.login-left-logo-text-msg {
-					font-size: 12px;
-					color: #32a99e;
-				}
-			}
-		}
-		.login-left-img {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			width: 100%;
-			height: 52%;
-			img {
-				width: 100%;
-				height: 100%;
-				animation: error-num 0.6s ease;
-			}
-		}
-		.login-left-waves {
-			position: absolute;
-			top: 0;
-			right: -100px;
-		}
+	width: 100%;
+	overflow: hidden;
+	display: flex;
+	position: relative;
+	.vue-particles {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: radial-gradient(ellipse at top left, rgba(105, 155, 200, 1) 0%, rgba(181, 197, 216, 1) 57%);
 	}
-	.login-right {
-		width: 700px;
-		.login-right-warp {
-			border: 1px solid var(--el-color-primary-light-3);
-			border-radius: 3px;
-			width: 500px;
-			height: 500px;
+	.login-weaper {
+		margin: auto;
+		height: 500px;
+		display: flex;
+		box-sizing: border-box;
+		position: relative;
+		z-index: 1;
+		border: none;
+		box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+		.login-left {
+			width: 491px;
+			padding: 20px;
+			font-size: 16px;
+			color: var(--prev-color-text-white);
 			position: relative;
-			overflow: hidden;
-			background-color: var(--el-color-white);
-			.login-right-warp-one,
-			.login-right-warp-two {
-				position: absolute;
-				display: block;
-				width: inherit;
-				height: inherit;
-				&::before,
-				&::after {
-					content: '';
-					position: absolute;
-					z-index: 1;
-				}
+			background-color: var(--prev-color-primary);
+			display: flex;
+			flex-direction: column;
+			border-top-left-radius: 4px;
+			border-bottom-left-radius: 4px;
+			.login-time {
+				width: 100%;
+				color: var(--prev-color-text-white);
+				opacity: 0.9;
+				font-size: 14px;
+				overflow: hidden;
 			}
-			.login-right-warp-one {
-				&::before {
-					filter: hue-rotate(0deg);
-					top: 0px;
-					left: 0;
-					width: 100%;
-					height: 3px;
-					background: linear-gradient(90deg, transparent, var(--el-color-primary));
-					animation: loginLeft 3s linear infinite;
-				}
-				&::after {
-					filter: hue-rotate(60deg);
-					top: -100%;
-					right: 2px;
-					width: 3px;
-					height: 100%;
-					background: linear-gradient(180deg, transparent, var(--el-color-primary));
-					animation: loginTop 3s linear infinite;
-					animation-delay: 0.7s;
-				}
-			}
-			.login-right-warp-two {
-				&::before {
-					filter: hue-rotate(120deg);
-					bottom: 2px;
-					right: -100%;
-					width: 100%;
-					height: 3px;
-					background: linear-gradient(270deg, transparent, var(--el-color-primary));
-					animation: loginRight 3s linear infinite;
-					animation-delay: 1.4s;
-				}
-				&::after {
-					filter: hue-rotate(300deg);
-					bottom: -100%;
-					left: 0px;
-					width: 3px;
-					height: 100%;
-					background: linear-gradient(360deg, transparent, var(--el-color-primary));
-					animation: loginBottom 3s linear infinite;
-					animation-delay: 2.1s;
-				}
-			}
-			.login-right-warp-mian {
+			.login-left-box {
+				flex: 1;
+				overflow: hidden;
+				position: relative;
+				z-index: 1;
 				display: flex;
-				flex-direction: column;
-				height: 100%;
-				.login-right-warp-main-title {
-					height: 130px;
-					line-height: 130px;
-					font-size: 27px;
-					text-align: center;
-					letter-spacing: 3px;
-					animation: logoAnimation 0.3s ease;
-					animation-delay: 0.3s;
-					color: var(--el-text-color-primary);
+				align-items: center;
+				padding: 80px 45px;
+				.logo {
+					font-size: 22px;
+					margin-bottom: 15px;
 				}
-				.login-right-warp-main-form {
-					flex: 1;
-					padding: 0 50px 50px;
-					.login-content-main-sacn {
-						position: absolute;
-						top: 0;
-						right: 0;
-						width: 50px;
-						height: 50px;
-						overflow: hidden;
-						cursor: pointer;
-						transition: all ease 0.3s;
-						color: var(--el-color-primary);
-						&-delta {
-							position: absolute;
-							width: 35px;
-							height: 70px;
-							z-index: 2;
-							top: 2px;
-							right: 21px;
-							background: var(--el-color-white);
-							transform: rotate(-45deg);
+				.title {
+					color: var(--prev-color-text-white);
+					font-weight: 300;
+					letter-spacing: 2px;
+					font-size: 16px;
+				}
+				.msg {
+					color: var(--prev-color-text-white);
+					font-size: 13px;
+					margin-top: 35px;
+					.msg-author {
+						opacity: 0.6;
+						span:last-of-type {
+							margin-left: 15px;
 						}
+					}
+					.msg-txt {
+						margin-top: 15px;
+						line-height: 22px;
+					}
+				}
+			}
+		}
+		.login-right {
+			width: 491px;
+			padding: 20px;
+			position: relative;
+			align-items: center;
+			display: flex;
+			background-color: var(--prev-bg-white);
+			border-top-right-radius: 4px;
+			border-bottom-right-radius: 4px;
+			.login-main {
+				margin: 0 auto;
+				width: 70%;
+				.login-title {
+					color: var(--prev-color-text-primary);
+					margin-bottom: 40px;
+					font-weight: 500;
+					font-size: 22px;
+					text-align: center;
+					letter-spacing: 4px;
+				}
+				.login-form {
+					margin: 10px 0;
+					i {
+						color: var(--prev-color-text-primary);
+					}
+					.el-form-item {
+						margin-bottom: 20px !important;
+						.login-code {
+							display: flex;
+							align-items: center;
+							justify-content: space-around;
+							margin: 0 0 0 10px;
+							user-select: none;
+							.login-code-img {
+								margin-top: 2px;
+								width: 100px;
+								height: 38px;
+								border: 1px solid var(--prev-border-color-base);
+								color: var(--prev-color-text-primary);
+								font-size: 14px;
+								font-weight: 700;
+								letter-spacing: 5px;
+								line-height: 38px;
+								text-indent: 5px;
+								text-align: center;
+								cursor: pointer;
+								transition: all ease 0.2s;
+								border-radius: 4px;
+								&:hover {
+									border-color: var(--prev-border-color-hover);
+									transition: all ease 0.2s;
+								}
+							}
+						}
+						.login-submit {
+							width: 100%;
+							letter-spacing: 2px;
+						}
+					}
+				}
+				.login-menu {
+					margin-top: 30px;
+					width: 100%;
+					text-align: left;
+					a {
+						color: var(--prev-color-text-secondary);
+						font-size: 12px;
+						margin: 0 8px;
+						text-decoration: none;
 						&:hover {
-							opacity: 1;
-							transition: all ease 0.3s;
-							color: var(--el-color-primary) !important;
-						}
-						i {
-							width: 47px;
-							height: 50px;
-							display: inline-block;
-							font-size: 48px;
-							position: absolute;
-							right: 1px;
-							top: 0px;
+							color: var(--prev-color-primary);
+							text-decoration: underline;
 						}
 					}
 				}

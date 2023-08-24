@@ -1,40 +1,40 @@
 <template>
-	<div class="error layout-padding">
-		<div class="layout-padding-auto layout-padding-view">
-			<div class="error-flex">
-				<div class="left">
-					<div class="left-item">
-						<div class="left-item-animation left-item-num">404</div>
-						<div class="left-item-animation left-item-title">{{ $t('message.notFound.foundTitle') }}</div>
-						<div class="left-item-animation left-item-msg">{{ $t('message.notFound.foundMsg') }}</div>
-						<div class="left-item-animation left-item-btn">
-							<el-button type="primary" size="default" round @click="onGoHome">{{ $t('message.notFound.foundBtn') }}</el-button>
-						</div>
+	<div class="error">
+		<div class="error-flex">
+			<div class="left">
+				<div class="left-item">
+					<div class="left-item-animation left-item-num">404</div>
+					<div class="left-item-animation left-item-title">{{ $t('message.notFound.foundTitle') }}</div>
+					<div class="left-item-animation left-item-msg">{{ $t('message.notFound.foundMsg') }}</div>
+					<div class="left-item-animation left-item-btn">
+						<el-button type="primary" round @click="onGoHome">{{ $t('message.notFound.foundBtn') }}</el-button>
 					</div>
 				</div>
-				<div class="right">
-					<img src="https://i.hd-r.cn/1a0d90a6c1e8b0184c7299dda713effd.png" />
-				</div>
+			</div>
+			<div class="right">
+				<img src="https://i.hd-r.cn/1a0d90a6c1e8b0184c7299dda713effd.png" />
 			</div>
 		</div>
 	</div>
 </template>
 
-<script setup lang="ts" name="notFound">
-import { useRouter } from 'vue-router';
-
-// 定义变量内容
-const router = useRouter();
-
-// 返回首页
-const onGoHome = () => {
-	router.push('/');
+<script>
+export default {
+	name: 'noFound',
+	methods: {
+		// 去首页
+		onGoHome() {
+			this.$router.push('/');
+		},
+	},
 };
 </script>
 
 <style scoped lang="scss">
 .error {
 	height: 100%;
+	background-color: white;
+	display: flex;
 	.error-flex {
 		margin: auto;
 		display: flex;
@@ -53,17 +53,17 @@ const onGoHome = () => {
 					animation-fill-mode: forwards;
 				}
 				.left-item-num {
-					color: var(--el-color-info);
+					color: #d6e0f6;
 					font-size: 55px;
 				}
 				.left-item-title {
 					font-size: 20px;
-					color: var(--el-text-color-primary);
+					color: #333333;
 					margin: 15px 0 5px 0;
 					animation-delay: 0.1s;
 				}
 				.left-item-msg {
-					color: var(--el-text-color-secondary);
+					color: #c0bebe;
 					font-size: 12px;
 					margin-bottom: 30px;
 					animation-delay: 0.2s;

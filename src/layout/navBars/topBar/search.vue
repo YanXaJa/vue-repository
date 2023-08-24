@@ -1,123 +1,98 @@
 <template>
 	<div class="layout-search-dialog">
-		<el-dialog v-model="state.isShowSearch" destroy-on-close :show-close="false">
-			<template #footer>
-				<el-autocomplete
-					v-model="state.menuQuery"
-					:fetch-suggestions="menuSearch"
-					:placeholder="$t('message.user.searchPlaceholder')"
-					ref="layoutMenuAutocompleteRef"
-					@select="onHandleSelect"
-					:fit-input-width="true"
-				>
-					<template #prefix>
-						<el-icon class="el-input__icon">
-							<ele-Search />
-						</el-icon>
-					</template>
-					<template #default="{ item }">
-						<div>
-							<SvgIcon :name="item.meta.icon" class="mr5" />
-							{{ $t(item.meta.title) }}
-						</div>
-					</template>
-				</el-autocomplete>
-			</template>
+		<el-dialog :visible.sync="isShowSearch" width="300px" destroy-on-close :modal="false" fullscreen :show-close="false">
+			<el-autocomplete
+				v-model="menuQuery"
+				:fetch-suggestions="menuSearch"
+				:placeholder="$t('message.user.searchPlaceholder')"
+				prefix-icon="el-icon-search"
+				ref="layoutMenuAutocompleteRef"
+				@select="onHandleSelect"
+				@blur="onSearchBlur"
+			>
+				<template slot-scope="{ item }">
+					<div><i :class="item.meta.icon" class="mr10"></i>{{ $t(item.meta.title) }}</div>
+				</template>
+			</el-autocomplete>
 		</el-dialog>
 	</div>
 </template>
 
-<script setup lang="ts" name="layoutBreadcrumbSearch">
-import { reactive, ref, nextTick } from 'vue';
-import { useRouter } from 'vue-router';
-import { useI18n } from 'vue-i18n';
-import { storeToRefs } from 'pinia';
-import { useTagsViewRoutes } from '/@/stores/tagsViewRoutes';
-
-// 定义变量内容
-const storesTagsViewRoutes = useTagsViewRoutes();
-const { tagsViewRoutes } = storeToRefs(storesTagsViewRoutes);
-const layoutMenuAutocompleteRef = ref();
-const { t } = useI18n();
-const router = useRouter();
-const state = reactive<SearchState>({
-	isShowSearch: false,
-	menuQuery: '',
-	tagsViewList: [],
-});
-
-// 搜索弹窗打开
-const openSearch = () => {
-	state.menuQuery = '';
-	state.isShowSearch = true;
-	initTageView();
-	nextTick(() => {
-		setTimeout(() => {
-			layoutMenuAutocompleteRef.value.focus();
-		});
-	});
+<script>
+export default {
+	name: 'layoutBreadcrumbSearch',
+	data() {
+		return {
+			isShowSearch: false,
+			menuQuery: '',
+			tagsViewList: [],
+		};
+	},
+	methods: {
+		// 搜索弹窗打开
+		openSearch() {
+			this.menuQuery = '';
+			this.isShowSearch = true;
+			this.initTageView();
+			this.$nextTick(() => {
+				this.$refs.layoutMenuAutocompleteRef.focus();
+			});
+		},
+		// 搜索弹窗关闭
+		closeSearch() {
+			setTimeout(() => {
+				this.isShowSearch = false;
+			}, 150);
+		},
+		// 菜单搜索数据过滤
+		menuSearch(queryString, cb) {
+			let results = queryString ? this.tagsViewList.filter(this.createFilter(queryString)) : this.tagsViewList;
+			cb(results);
+		},
+		// 菜单搜索过滤
+		createFilter(queryString) {
+			return (restaurant) => {
+				return (
+					restaurant.path.toLowerCase().indexOf(queryString.toLowerCase()) > -1 ||
+					restaurant.meta.title.toLowerCase().indexOf(queryString.toLowerCase()) > -1 ||
+					this.$t(restaurant.meta.title).toLowerCase().indexOf(queryString.toLowerCase()) > -1
+				);
+			};
+		},
+		// 初始化菜单数据
+		initTageView() {
+			if (this.tagsViewList.length > 0) return false;
+			this.$store.state.tagsViewRoutes.tagsViewRoutes.map((v) => {
+				if (!v.meta.isHide) this.tagsViewList.push({ ...v });
+			});
+		},
+		// 当前菜单选中时
+		onHandleSelect(item) {
+			let { path, redirect } = item;
+			if (item.meta.isLink && !item.meta.isIframe) window.open(item.meta.isLink);
+			else if (redirect) this.$router.push(redirect);
+			else this.$router.push(path);
+			this.closeSearch();
+		},
+		// input 失去焦点时
+		onSearchBlur() {
+			this.closeSearch();
+		},
+	},
 };
-// 搜索弹窗关闭
-const closeSearch = () => {
-	state.isShowSearch = false;
-};
-// 菜单搜索数据过滤
-const menuSearch = (queryString: string, cb: Function) => {
-	let results = queryString ? state.tagsViewList.filter(createFilter(queryString)) : state.tagsViewList;
-	cb(results);
-};
-// 菜单搜索过滤
-const createFilter = (queryString: string) => {
-	return (restaurant: RouteItem) => {
-		return (
-			restaurant.path.toLowerCase().indexOf(queryString.toLowerCase()) > -1 ||
-			restaurant.meta!.title!.toLowerCase().indexOf(queryString.toLowerCase()) > -1 ||
-			t(restaurant.meta!.title!).indexOf(queryString.toLowerCase()) > -1
-		);
-	};
-};
-// 初始化菜单数据
-const initTageView = () => {
-	if (state.tagsViewList.length > 0) return false;
-	tagsViewRoutes.value.map((v: RouteItem) => {
-		if (!v.meta?.isHide) state.tagsViewList.push({ ...v });
-	});
-};
-// 当前菜单选中时
-const onHandleSelect = (item: RouteItem) => {
-	let { path, redirect } = item;
-	if (item.meta?.isLink && !item.meta?.isIframe) window.open(item.meta?.isLink);
-	else if (redirect) router.push(redirect);
-	else router.push(path);
-	closeSearch();
-};
-
-// 暴露变量
-defineExpose({
-	openSearch,
-});
 </script>
 
 <style scoped lang="scss">
 .layout-search-dialog {
-	position: relative;
-	:deep(.el-dialog) {
-		.el-dialog__header,
-		.el-dialog__body {
-			display: none;
-		}
-		.el-dialog__footer {
-			width: 100%;
-			position: absolute;
-			left: 50%;
-			transform: translateX(-50%);
-			top: -53vh;
-		}
+	::v-deep .el-dialog {
+		box-shadow: unset !important;
+		border-radius: 0 !important;
+		background: rgba(0, 0, 0, 0.5);
 	}
-	:deep(.el-autocomplete) {
+	::v-deep .el-autocomplete {
 		width: 560px;
 		position: absolute;
-		top: 150px;
+		top: 100px;
 		left: 50%;
 		transform: translateX(-50%);
 	}

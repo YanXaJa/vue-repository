@@ -8,20 +8,20 @@
 	transition: all 0.3s ease;
 }
 // slide-right
-.slide-right-enter-from {
+.slide-right-enter {
 	opacity: 0;
 	transform: translateX(-20px);
 }
-.slide-right-leave-to {
+.slide-right-leave-active {
 	opacity: 0;
 	transform: translateX(20px);
 }
 // slide-left
 .slide-left-enter-from {
-	@extend .slide-right-leave-to;
+	@extend .slide-right-leave-active;
 }
 .slide-left-leave-to {
-	@extend .slide-right-enter-from;
+	@extend .slide-right-enter;
 }
 // opacitys
 .opacitys-enter-active,
@@ -29,8 +29,8 @@
 	will-change: transform;
 	transition: all 0.3s ease;
 }
-.opacitys-enter-from,
-.opacitys-leave-to {
+.opacitys-enter,
+.opacitys-leave-active {
 	opacity: 0;
 }
 
@@ -38,16 +38,18 @@
 ------------------------------- */
 .breadcrumb-enter-active,
 .breadcrumb-leave-active {
-	transition: all 0.5s ease;
+	transition: all 0.3s;
 }
-.breadcrumb-enter-from,
+.breadcrumb-enter,
 .breadcrumb-leave-active {
 	opacity: 0;
 	transform: translateX(20px);
 }
+.breadcrumb-move {
+	transition: all 0.3s;
+}
 .breadcrumb-leave-active {
 	position: absolute;
-	z-index: -1;
 }
 
 /* logo 过渡动画
@@ -82,53 +84,6 @@
 	}
 	100% {
 		opacity: 1;
-	}
-}
-@keyframes error-img-two {
-	0% {
-		opacity: 1;
-	}
-	100% {
-		opacity: 0;
-	}
-}
-
-/* 登录页动画
-------------------------------- */
-@keyframes loginLeft {
-	0% {
-		left: -100%;
-	}
-	50%,
-	100% {
-		left: 100%;
-	}
-}
-@keyframes loginTop {
-	0% {
-		top: -100%;
-	}
-	50%,
-	100% {
-		top: 100%;
-	}
-}
-@keyframes loginRight {
-	0% {
-		right: -100%;
-	}
-	50%,
-	100% {
-		right: 100%;
-	}
-}
-@keyframes loginBottom {
-	0% {
-		bottom: -100%;
-	}
-	50%,
-	100% {
-		bottom: 100%;
 	}
 }
 
